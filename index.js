@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -19,17 +19,47 @@ async function run() {
     try {
         const billingCollection = client.db('billing').collection('allBilling');
 
-        // app.get('/category', async (req, res) => {
-        //     const query = {};
-        //     const result = await watchesCategoryCollection.find(query).toArray();
-        //     res.send(result);
-        // })
+        let sortPattern = { dateAndTime: -1 };
+
+        app.get('/billing-list', async (req, res) => {
+            const query = {};
+            const result = billingCollection.find(query).sort(sortPattern);
+            const billingList = await result.toArray();
+            res.send(billingList);
+        })
 
         app.post('/add-billing', async (req, res) => {
             const bill = req.body;
             const result = await billingCollection.insertOne(bill);
             res.send(result);
         });
+
+        app.get('/update-billing/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const updateDataItem = await billingCollection.findOne(query);
+            res.send(updateDataItem);
+        })
+
+        app.patch('/update-billing/:id', async (req, res) => {
+            const id = req.params.id;
+            const fullName = req.body.fullName;
+            const email = req.body.email;
+            const phone = req.body.phone;
+            const paidAmount = req.body.paidAmount;
+            const query = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    fullName: fullName,
+                    email: email,
+                    phone: phone,
+                    paidAmount: paidAmount
+                }
+            }
+            const result = await billingCollection.updateOne(query, updateDoc);
+            res.send(result);
+
+        })
 
         // app.get('/products/:categoryID', async (req, res) => {
         //     const id = req.params.categoryID;
