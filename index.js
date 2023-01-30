@@ -18,7 +18,8 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const billingCollection = client.db('billing').collection('allBilling');
-
+        const usersCollection = client.db('billing').collection('users');
+        
         let sortPattern = { dateAndTime: -1 };
 
         app.get('/billing-list', async (req, res) => {
@@ -69,73 +70,25 @@ async function run() {
 
         })
 
-        // app.get('/products/:categoryID', async (req, res) => {
-        //     const id = req.params.categoryID;
-        //     const query = { category_id: parseInt(id) };
-        //     const result = await watchesProductsCollection.find(query).toArray();
-        //     res.send(result);
-        // })
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const result = await usersCollection.find(query).toArray();
+            res.send(result);
+        })
 
-        // app.get('/myProducts/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     const query = { email };
-        //     const result = await watchesProductsCollection.find(query).toArray();
-        //     res.send(result);
-        // })
-
-        // app.delete('/myProducts/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const result = await watchesProductsCollection.deleteOne(query);
-        //     const resultData = await advertiseCollection.deleteOne({productId : id});
-        //     res.send(resultData);
-        // })
-
-        // app.get('/users', async(req, res)=>{
-        //     const query = {};
-        //     const users = await usersCollection.find(query).toArray();
-        //     res.send(users);
-        // })
-
-        
-
-        // app.post('/users', async (req, res) => {
-        //     const user = req.body;
-        //     const query = {
-        //         email: user.email,
-        //         value: user.value    
-        //     }
-        //     const alreadySignup = await usersCollection.find(query).toArray();
-        //     if (alreadySignup.length) {
-        //         return res.send({ acknowledged: false });
-        //     }
-        //     const result = await usersCollection.insertOne(user);
-        //     res.send(result);
-        // })
-
-        // app.put('/users/:id', async(req, res)=>{
-        //     const id = req.params.id;
-        //     const filter = {_id: ObjectId(id)};
-        //     const user = req.body;
-        //     const option = {upsert : true};
-        //     const updateDoc ={
-        //         $set: {
-        //             status: 'Verified '
-        //         }
-        //     }
-        //     const result = await usersCollection.updateOne(filter, updateDoc, option);
-        //     res.send(result);
-        // })
-
-        // app.get('/bookings/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const booking = await bookingsCollection.findOne(query);
-        //     res.send(booking);
-        // })
-
-        
-
+        app.post('/registration', async (req, res) => {
+            const registration = req.body;
+            const query = {
+                email: registration.email,
+                password: registration.password
+            }
+            const alreadyRegister = await usersCollection.find(query).toArray();
+            if (alreadyRegister.length) {
+                return res.send({ acknowledged: false });
+            }
+            const result = await usersCollection.insertOne(registration);
+            res.send(result);
+        });
     }
     finally {
 
